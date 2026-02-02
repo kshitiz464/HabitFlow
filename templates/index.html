@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HabitFlow</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Chart.js -->
+    <script src="/static/js/chart.min.js"></script>
+
+    <!-- Sound Effects -->
+    <script src="/static/js/sounds.js"></script>
+
+    <!-- App Styles -->
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+
+<body>
+    <div class="app-container">
+        <!-- Sidebar Navigation -->
+        <aside class="sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="logo">
+                    <div class="logo-icon">
+                        <i data-lucide="target"></i>
+                    </div>
+                    <span class="logo-text">HabitFlow</span>
+                </div>
+                <button class="sidebar-toggle" onclick="toggleSidebar()" title="Toggle Sidebar">
+                    <i data-lucide="panel-left-close" id="sidebarToggleIcon"></i>
+                </button>
+            </div>
+
+            <ul class="nav-menu">
+                <li class="nav-item">
+                    <a class="nav-link active" data-page="dashboard" title="Dashboard">
+                        <i data-lucide="layout-dashboard"></i>
+                        <span class="nav-text">Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-page="habits" title="Habits">
+                        <i data-lucide="check-circle"></i>
+                        <span class="nav-text">Habits</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-page="tasks" title="Daily Tasks">
+                        <i data-lucide="list-todo"></i>
+                        <span class="nav-text">Daily Tasks</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-page="music" title="Music">
+                        <i data-lucide="music"></i>
+                        <span class="nav-text">Music</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" data-page="reports" title="Reports">
+                        <i data-lucide="bar-chart-3"></i>
+                        <span class="nav-text">Reports</span>
+                    </a>
+                </li>
+            </ul>
+
+            <div class="theme-toggle">
+                <button class="theme-btn" id="themeBtn" onclick="toggleTheme()" title="Toggle Theme">
+                    <i data-lucide="moon"></i>
+                    <span class="nav-text">Dark Mode</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Dashboard Page -->
+            <div id="dashboardPage" class="page active">
+                <div class="page-header">
+                    <h1 class="page-title">Dashboard</h1>
+                    <p class="page-subtitle">Track your progress and stay motivated</p>
+                </div>
+
+                <!-- Stats Cards -->
+                <div class="stats-grid">
+                    <div class="stat-card warning">
+                        <div class="stat-icon">
+                            <i data-lucide="flame"></i>
+                        </div>
+                        <div class="stat-value" id="streakValue">0</div>
+                        <div class="stat-label">Day Streak</div>
+                    </div>
+                    <div class="stat-card success">
+                        <div class="stat-icon">
+                            <i data-lucide="trending-up"></i>
+                        </div>
+                        <div class="stat-value" id="completionValue">0%</div>
+                        <div class="stat-label">Today's Completion</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i data-lucide="clipboard-list"></i>
+                        </div>
+                        <div class="stat-value" id="tasksValue">0/0</div>
+                        <div class="stat-label">Today's Tasks</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">
+                            <i data-lucide="target"></i>
+                        </div>
+                        <div class="stat-value" id="habitsValue">0</div>
+                        <div class="stat-label">Total Habits</div>
+                    </div>
+                </div>
+
+                <!-- Weekly Chart -->
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Weekly Progress</h3>
+                        <div class="week-nav">
+                            <button class="nav-arrow" onclick="prevWeek()" title="Previous Week">
+                                <i data-lucide="chevron-left"></i>
+                            </button>
+                            <span class="week-range" id="weekRangeTitle">Jan 27 - Feb 2, 2026</span>
+                            <button class="nav-arrow" onclick="nextWeek()" title="Next Week">
+                                <i data-lucide="chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div style="height: 250px;">
+                        <canvas id="weeklyChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Habits Page -->
+            <div id="habitsPage" class="page">
+                <div class="page-header-with-action">
+                    <div>
+                        <h1 class="page-title">Habits</h1>
+                        <p class="page-subtitle">Track your daily habits and build consistency</p>
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-secondary" onclick="openManageHabitsModal()">
+                            <i data-lucide="settings-2"></i>
+                            Manage
+                        </button>
+                        <button class="btn btn-primary" onclick="openAddHabitModal()">
+                            <i data-lucide="plus"></i>
+                            Add Habit
+                        </button>
+                    </div>
+                </div>
+
+                <div class="calendar-header">
+                    <div class="calendar-nav">
+                        <button class="btn btn-secondary btn-icon" onclick="prevMonth()">
+                            <i data-lucide="chevron-left"></i>
+                        </button>
+                        <span class="calendar-title" id="calendarTitle">February 2026</span>
+                        <button class="btn btn-secondary btn-icon" onclick="nextMonth()">
+                            <i data-lucide="chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="calendar-container" id="habitCalendar">
+                    <!-- Calendar grid rendered by JS -->
+                </div>
+            </div>
+
+            <!-- Tasks Page -->
+            <div id="tasksPage" class="page">
+                <div class="page-header">
+                    <h1 class="page-title">Daily Tasks</h1>
+                    <p class="page-subtitle">Plan and manage your daily to-dos</p>
+                </div>
+
+                <div class="tasks-header">
+                    <div class="date-picker">
+                        <button class="btn btn-secondary btn-icon" onclick="changeTaskDate(-1)">
+                            <i data-lucide="chevron-left"></i>
+                        </button>
+                        <input type="date" class="form-input" id="taskDateInput" onchange="onTaskDateChange(this.value)"
+                            style="width: auto;">
+                        <button class="btn btn-secondary btn-icon" onclick="changeTaskDate(1)">
+                            <i data-lucide="chevron-right"></i>
+                        </button>
+                        <button class="btn btn-secondary" onclick="goToToday()">Today</button>
+                        <span class="page-subtitle" id="taskDateDisplay" style="margin-left: 16px;"></span>
+                    </div>
+                    <button class="btn btn-primary" onclick="openAddTaskModal()">
+                        <i data-lucide="plus"></i>
+                        Add Task
+                    </button>
+                </div>
+
+                <div class="task-list" id="taskList">
+                    <!-- Tasks rendered by JS -->
+                </div>
+            </div>
+
+            <!-- Music Page -->
+            <div id="musicPage" class="page">
+                <div class="page-header">
+                    <h1 class="page-title">Music</h1>
+                    <p class="page-subtitle">Listen while you work on your goals</p>
+                </div>
+
+                <div class="music-launcher-container">
+                    <div class="music-card" onclick="openMusicService('youtube')">
+                        <div class="music-card-icon youtube">
+                            <i data-lucide="youtube"></i>
+                        </div>
+                        <div class="music-card-content">
+                            <h3>YouTube Music</h3>
+                            <p>Open YouTube Music in a new window</p>
+                        </div>
+                        <div class="music-card-action">
+                            <i data-lucide="external-link"></i>
+                        </div>
+                    </div>
+                    <div class="music-card" onclick="openMusicService('spotify')">
+                        <div class="music-card-icon spotify">
+                            <i data-lucide="music"></i>
+                        </div>
+                        <div class="music-card-content">
+                            <h3>Spotify</h3>
+                            <p>Open Spotify in a new window</p>
+                        </div>
+                        <div class="music-card-action">
+                            <i data-lucide="external-link"></i>
+                        </div>
+                    </div>
+                    <div class="music-tip">
+                        <i data-lucide="info"></i>
+                        <span>Music services open in separate windows so you can control playback while tracking your
+                            habits!</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reports Page -->
+            <div id="reportsPage" class="page">
+                <div class="page-header">
+                    <h1 class="page-title">Reports & Analytics</h1>
+                    <p class="page-subtitle">Track your progress over time</p>
+                </div>
+
+                <!-- Summary Cards with Circular Progress -->
+                <div class="reports-summary-grid">
+                    <div class="summary-card">
+                        <div class="circular-progress" id="todayProgress" data-value="0">
+                            <svg viewBox="0 0 100 100">
+                                <circle class="progress-bg" cx="50" cy="50" r="45" />
+                                <circle class="progress-fill" cx="50" cy="50" r="45" />
+                            </svg>
+                            <div class="progress-value">0%</div>
+                        </div>
+                        <div class="summary-label">Today's Score</div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="circular-progress habit-progress" id="habitProgress" data-value="0">
+                            <svg viewBox="0 0 100 100">
+                                <circle class="progress-bg" cx="50" cy="50" r="45" />
+                                <circle class="progress-fill" cx="50" cy="50" r="45" />
+                            </svg>
+                            <div class="progress-value">0%</div>
+                        </div>
+                        <div class="summary-label">Habit Rate (Month)</div>
+                    </div>
+                    <div class="summary-card">
+                        <div class="circular-progress task-progress" id="taskProgress" data-value="0">
+                            <svg viewBox="0 0 100 100">
+                                <circle class="progress-bg" cx="50" cy="50" r="45" />
+                                <circle class="progress-fill" cx="50" cy="50" r="45" />
+                            </svg>
+                            <div class="progress-value">0%</div>
+                        </div>
+                        <div class="summary-label">Task Rate (Month)</div>
+                    </div>
+                    <div class="summary-card stats-card">
+                        <div class="stats-mini">
+                            <div class="stat-mini-item">
+                                <i data-lucide="flame"></i>
+                                <span class="stat-mini-value" id="bestStreakValue">0</span>
+                                <span class="stat-mini-label">Best Streak</span>
+                            </div>
+                            <div class="stat-mini-item">
+                                <i data-lucide="check-circle"></i>
+                                <span class="stat-mini-value" id="totalHabitCompletions">0</span>
+                                <span class="stat-mini-label">Total Habits Done</span>
+                            </div>
+                            <div class="stat-mini-item">
+                                <i data-lucide="list-checks"></i>
+                                <span class="stat-mini-value" id="totalTasksCompleted">0</span>
+                                <span class="stat-mini-label">Total Tasks Done</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Monthly Trend Chart -->
+                <div class="chart-container reports-chart">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Monthly Trend</h3>
+                        <div class="chart-controls">
+                            <button class="btn btn-secondary btn-icon" onclick="prevReportMonth()">
+                                <i data-lucide="chevron-left"></i>
+                            </button>
+                            <span id="reportMonthTitle">February 2026</span>
+                            <button class="btn btn-secondary btn-icon" onclick="nextReportMonth()">
+                                <i data-lucide="chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div style="height: 300px;">
+                        <canvas id="monthlyTrendChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Habit Streaks Section -->
+                <div class="streaks-section">
+                    <h3 class="section-title">Habit Streaks</h3>
+                    <div class="streaks-grid" id="streaksGrid">
+                        <!-- Streaks rendered by JS -->
+                    </div>
+                </div>
+
+                <!-- Daily Report Section -->
+                <div class="daily-report-section">
+                    <div class="section-header">
+                        <h3 class="section-title">Daily Report</h3>
+                        <input type="date" class="form-input" id="reportDateInput"
+                            onchange="loadDailyReport(this.value)">
+                    </div>
+                    <div class="daily-report-content" id="dailyReportContent">
+                        <!-- Daily report rendered by JS -->
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Add Habit Modal -->
+    <div class="modal-overlay" id="habitModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title">Add New Habit</h2>
+                <button class="modal-close" onclick="closeHabitModal()">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Habit Name</label>
+                <input type="text" class="form-input" id="habitName" placeholder="e.g., Drink 8 glasses of water">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Icon</label>
+                <div class="emoji-picker" id="emojiPicker">
+                    <!-- Rendered by JS -->
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Color</label>
+                <div class="color-picker" id="colorPicker">
+                    <!-- Rendered by JS -->
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeHabitModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveHabit()">Save Habit</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Task Modal -->
+    <div class="modal-overlay" id="taskModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h2 class="modal-title">Add New Task</h2>
+                <button class="modal-close" onclick="closeTaskModal()">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Task Title</label>
+                <input type="text" class="form-input" id="taskTitle" placeholder="What do you need to do?">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Priority</label>
+                <select class="form-input form-select" id="taskPriority">
+                    <option value="low">Low</option>
+                    <option value="medium" selected>Medium</option>
+                    <option value="high">High</option>
+                </select>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Start Time</label>
+                    <input type="time" class="form-input" id="taskStartTime">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">End Time</label>
+                    <input type="time" class="form-input" id="taskEndTime">
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button class="btn btn-secondary" onclick="closeTaskModal()">Cancel</button>
+                <button class="btn btn-primary" onclick="saveTask()">Save Task</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Manage Habits Modal -->
+    <div class="modal-overlay" id="manageHabitsModal">
+        <div class="modal modal-wide">
+            <div class="modal-header">
+                <h2 class="modal-title">Manage Habits</h2>
+                <button class="modal-close" onclick="closeManageHabitsModal()">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+
+            <p class="manage-habits-hint">
+                <i data-lucide="grip-vertical" style="width: 14px; height: 14px;"></i>
+                Drag to reorder • Click trash to delete
+            </p>
+
+            <div class="manage-habits-list" id="manageHabitsList">
+                <!-- Rendered by JS -->
+            </div>
+
+            <div class="modal-actions">
+                <button class="btn btn-primary" onclick="closeManageHabitsModal()">Done</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div class="modal-overlay" id="confirmModal">
+        <div class="modal modal-confirm">
+            <div class="modal-header">
+                <h2 class="modal-title" id="confirmTitle">Confirm</h2>
+            </div>
+            <p class="confirm-message" id="confirmMessage">Are you sure?</p>
+            <div class="modal-actions">
+                <button class="btn btn-secondary" id="confirmCancel">Cancel</button>
+                <button class="btn btn-danger" id="confirmOk">Delete</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- App JavaScript -->
+    <script src="/static/js/app.js"></script>
+    <script>
+        // Initialize Lucide icons
+        lucide.createIcons();
+    </script>
+</body>
+
+</html>
